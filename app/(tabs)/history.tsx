@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -11,13 +12,9 @@ import {
 } from "react-native";
 
 export default function HistoryScreen() {
-  const [data, setData] = useState([
-    { date: "01-01-2024", weight: 61.0, bmi: 38.1 },
-    { date: "15-03-2024", weight: 58.0, bmi: 17.6 },
-    { date: "12-01-2025", weight: 75.0, bmi: 28.0 },
-    { date: "23-02-2025", weight: 73.0, bmi: 24.0 },
-    { date: "05-05-2025", weight: 74.0, bmi: 32.0 },
-  ]);
+  const [data, setData] = useState<
+    { date: string; weight: number; bmi: number }[]
+  >([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -38,25 +35,54 @@ export default function HistoryScreen() {
     setModalVisible(true);
   };
 
-const HEIGHT = 1.7; // Hard coded !!!!!!! To change
+  const HEIGHT = 1.7; // Hard coded
 
-const handleEdit = () => {
-  if (selectedIndex === null) return;
-  const newData = [...data];
-  const newWeight = parseFloat(editWeight);
-  newData[selectedIndex].weight = newWeight;
-  // Recalculate BMI
-  newData[selectedIndex].bmi = parseFloat((newWeight / (HEIGHT * HEIGHT)).toFixed(1));
-  setData(newData);
-  setModalVisible(false);
-};
+  const handleEdit = () => {
+    if (selectedIndex === null) return;
+    const newData = [...data];
+    const newWeight = parseFloat(editWeight);
+    newData[selectedIndex].weight = newWeight;
+    // Recalculate BMI
+    newData[selectedIndex].bmi = parseFloat(
+      (newWeight / (HEIGHT * HEIGHT)).toFixed(1)
+    );
+    setData(newData);
+    saveDataToStorage(newData);
+    setModalVisible(false);
+  };
 
   const handleDelete = () => {
     if (selectedIndex === null) return;
     const newData = data.filter((_, i) => i !== selectedIndex);
     setData(newData);
+    saveDataToStorage(newData);
     setModalVisible(false);
   };
+
+  // Save updated data array to AsyncStorage
+  const saveDataToStorage = async (newData: typeof data) => {
+    try {
+      await AsyncStorage.setItem("bmiDataArray", JSON.stringify(newData));
+    } catch (error) {
+      console.error("Error saving data", error);
+    }
+  };
+
+  // Load data from AsyncStorage on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const storedDataString = await AsyncStorage.getItem("bmiDataArray");
+        if (storedDataString) {
+          const storedData = JSON.parse(storedDataString);
+          setData(storedData);
+        }
+      } catch (error) {
+        console.error("Error loading data", error);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -71,25 +97,22 @@ const handleEdit = () => {
         {/* Rows */}
         {data.map((item, index) => (
           <View key={index} style={styles.row}>
-            <Text style={styles.cell}>{item.date}</Text>
+            <Text style={styles.cell}>
+              {new Date(item.date).toLocaleDateString()}
+            </Text>
 
-            <TouchableOpacity
-              style={styles.cell}
-              onPress={() => openModal(index)}
-            >
+            <TouchableOpacity style={styles.cell} onPress={() => openModal(index)}>
               <Text>{item.weight.toFixed(1)}</Text>
             </TouchableOpacity>
 
-            <View
-              style={[styles.cell, { backgroundColor: getBMIColor(item.bmi) }]}
-            >
+            <View style={[styles.cell, { backgroundColor: getBMIColor(item.bmi) }]}>
               <Text style={styles.bmiText}>{item.bmi.toFixed(1)}</Text>
             </View>
           </View>
         ))}
       </View>
 
-      {/* Modal */}
+      {/* Modal code remains unchanged */}
       <Modal
         visible={modalVisible}
         transparent

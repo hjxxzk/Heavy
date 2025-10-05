@@ -52,14 +52,25 @@ export default function HomeScreen() {
 
       const currentDate = new Date().toISOString();
 
-      const data = {
+      const newEntry = {
         weight: w,
-        height: h,
-        bmi: bmi,
+        bmi: parseFloat(bmiValue.toFixed(1)),
         date: currentDate,
       };
 
-      await AsyncStorage.setItem("bmiData", JSON.stringify(data));
+      try {
+        // Load existing entries array
+        const storedDataString = await AsyncStorage.getItem("bmiDataArray");
+        let storedData = storedDataString ? JSON.parse(storedDataString) : [];
+
+        // Append new entry
+        storedData.push(newEntry);
+
+        // Save updated array back
+        await AsyncStorage.setItem("bmiDataArray", JSON.stringify(storedData));
+      } catch (error) {
+        console.error("Error saving data", error);
+      }
     }
   };
 
