@@ -2,7 +2,7 @@ import { HapticTab } from "@/components/haptic-tab";
 import PinkPlusIcon from "@/components/PinkPlusIcon";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Tabs } from "expo-router";
-import { ChartLine } from "lucide-react-native";
+import { CalendarRange, ChartLine } from "lucide-react-native";
 import React from "react";
 
 export default function TabLayout() {
@@ -12,14 +12,24 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarButton: HapticTab, // still applied globally
+        tabBarButton: HapticTab,
+        headerStyle: {
+          borderBottomColor: "#000", // czarna kreska pod headerem
+          borderBottomWidth: 1,
+        },
+        tabBarStyle: {
+          height: 60,
+          paddingTop: 10,
+          borderTopColor: "#000", // czarna kreska
+          borderTopWidth: 1, // grubość kreski
+        },
       }}
     >
       <Tabs.Screen
         name="history"
         options={{
           title: "Weight history",
-          tabBarIcon: () => <ChartLine color="#000000" />,
+          tabBarIcon: () => <CalendarRange color="#000000" />,
           tabBarLabel: "",
         }}
       />
