@@ -29,7 +29,12 @@ export default function TabLayout() {
         name="history"
         options={{
           title: "Weight history",
-          tabBarIcon: () => <CalendarRange color="#000000" />,
+          tabBarIcon: ({ focused }) => (
+            <CalendarRange
+              color="#000000"
+              size={focused ? 32 : 24} // bigger when active
+            />
+          ),
           tabBarLabel: "",
         }}
       />
@@ -38,7 +43,6 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Track your weight",
-          // 👇 show your pink icon only for this tab
           tabBarIcon: ({ focused }) => (
             <PinkPlusIcon size={focused ? 36 : 28} />
           ),
@@ -50,7 +54,12 @@ export default function TabLayout() {
         name="chart"
         options={{
           title: "Weight chart",
-          tabBarIcon: () => <ChartLine color="#000000" />,
+          tabBarIcon: ({ focused }) =>  (
+            <ChartLine 
+            color="#000000"
+            size={focused ? 32 : 24}
+            />
+          ),
           tabBarLabel: "",
         }}
       />
