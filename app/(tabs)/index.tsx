@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BmiEntry from "./Entry.types";
 
 export default function HomeScreen() {
   const [weight, setWeight] = useState("");
@@ -52,21 +53,19 @@ export default function HomeScreen() {
 
       const currentDate = new Date().toISOString();
 
-      const newEntry = {
+      const newEntry: BmiEntry = {
         weight: w,
+        height: h,
         bmi: parseFloat(bmiValue.toFixed(1)),
         date: currentDate,
       };
 
       try {
-        // Load existing entries array
         const storedDataString = await AsyncStorage.getItem("bmiDataArray");
         let storedData = storedDataString ? JSON.parse(storedDataString) : [];
 
-        // Append new entry
         storedData.push(newEntry);
 
-        // Save updated array back
         await AsyncStorage.setItem("bmiDataArray", JSON.stringify(storedData));
       } catch (error) {
         console.error("Error saving data", error);

@@ -10,11 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BmiEntry from "./Entry.types";
 
 export default function HistoryScreen() {
-  const [data, setData] = useState<
-    { date: string; weight: number; bmi: number }[]
-  >([]);
+  const [data, setData] = useState<BmiEntry[]>([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -101,11 +100,16 @@ export default function HistoryScreen() {
               {new Date(item.date).toLocaleDateString()}
             </Text>
 
-            <TouchableOpacity style={styles.cell} onPress={() => openModal(index)}>
+            <TouchableOpacity
+              style={styles.cell}
+              onPress={() => openModal(index)}
+            >
               <Text>{item.weight.toFixed(1)}</Text>
             </TouchableOpacity>
 
-            <View style={[styles.cell, { backgroundColor: getBMIColor(item.bmi) }]}>
+            <View
+              style={[styles.cell, { backgroundColor: getBMIColor(item.bmi) }]}
+            >
               <Text style={styles.bmiText}>{item.bmi.toFixed(1)}</Text>
             </View>
           </View>
@@ -131,11 +135,17 @@ export default function HistoryScreen() {
             />
 
             <View style={styles.buttonRow}>
-              <Pressable style={[styles.button, styles.deleteBtn]} onPress={handleDelete}>
+              <Pressable
+                style={[styles.button, styles.deleteBtn]}
+                onPress={handleDelete}
+              >
                 <Text style={styles.deleteText}>Delete</Text>
               </Pressable>
 
-              <Pressable style={[styles.button, styles.editBtn]} onPress={handleEdit}>
+              <Pressable
+                style={[styles.button, styles.editBtn]}
+                onPress={handleEdit}
+              >
                 <Text style={styles.editText}>Edit</Text>
               </Pressable>
             </View>

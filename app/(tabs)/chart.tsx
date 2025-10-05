@@ -18,7 +18,7 @@ export default function WeightChart() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const stored = await AsyncStorage.getItem("bmiData");
+      const stored = await AsyncStorage.getItem("bmiDataArray");
       const data: BmiEntry[] = stored ? JSON.parse(stored) : [];
 
       const dataWithFormattedDates = data.map((entry: BmiEntry) => {
