@@ -1,112 +1,236 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function HistoryScreen() {
+  const [data, setData] = useState([
+    { date: "01-01-2024", weight: 61.0, bmi: 38.1 },
+    { date: "15-03-2024", weight: 58.0, bmi: 17.6 },
+    { date: "12-01-2025", weight: 75.0, bmi: 28.0 },
+    { date: "23-02-2025", weight: 73.0, bmi: 24.0 },
+    { date: "05-05-2025", weight: 74.0, bmi: 32.0 },
+  ]);
 
-export default function TabTwoScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [editWeight, setEditWeight] = useState("");
+
+  // helper to color BMI cell
+  const getBMIColor = (bmi: number) => {
+    if (bmi < 18.5) return "#4ea8ff"; // underweight
+    if (bmi < 25) return "#4cff7a"; // normal
+    if (bmi < 30) return "#ffe84c"; // overweight
+    if (bmi < 35) return "#ff6906"; // obese type 1
+    return "#f71717"; // obese type 2
+  };
+
+  const openModal = (index: number) => {
+    setSelectedIndex(index);
+    setEditWeight(data[index].weight.toString());
+    setModalVisible(true);
+  };
+
+const HEIGHT = 1.7; // Hard coded !!!!!!! To change
+
+const handleEdit = () => {
+  if (selectedIndex === null) return;
+  const newData = [...data];
+  const newWeight = parseFloat(editWeight);
+  newData[selectedIndex].weight = newWeight;
+  // Recalculate BMI
+  newData[selectedIndex].bmi = parseFloat((newWeight / (HEIGHT * HEIGHT)).toFixed(1));
+  setData(newData);
+  setModalVisible(false);
+};
+
+  const handleDelete = () => {
+    if (selectedIndex === null) return;
+    const newData = data.filter((_, i) => i !== selectedIndex);
+    setData(newData);
+    setModalVisible(false);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.table}>
+        {/* Header */}
+        <View style={[styles.row, styles.headerRow]}>
+          <Text style={[styles.cell, styles.headerText]}>Date</Text>
+          <Text style={[styles.cell, styles.headerText]}>Weight</Text>
+          <Text style={[styles.cell, styles.headerText]}>BMI</Text>
+        </View>
+
+        {/* Rows */}
+        {data.map((item, index) => (
+          <View key={index} style={styles.row}>
+            <Text style={styles.cell}>{item.date}</Text>
+
+            <TouchableOpacity
+              style={styles.cell}
+              onPress={() => openModal(index)}
+            >
+              <Text>{item.weight.toFixed(1)}</Text>
+            </TouchableOpacity>
+
+            <View
+              style={[styles.cell, { backgroundColor: getBMIColor(item.bmi) }]}
+            >
+              <Text style={styles.bmiText}>{item.bmi.toFixed(1)}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Edit</Text>
+
+            <TextInput
+              style={styles.input}
+              value={editWeight}
+              onChangeText={setEditWeight}
+              keyboardType="numeric"
+            />
+
+            <View style={styles.buttonRow}>
+              <Pressable style={[styles.button, styles.deleteBtn]} onPress={handleDelete}>
+                <Text style={styles.deleteText}>Delete</Text>
+              </Pressable>
+
+              <Pressable style={[styles.button, styles.editBtn]} onPress={handleEdit}>
+                <Text style={styles.editText}>Edit</Text>
+              </Pressable>
+            </View>
+
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeText}>×</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    paddingTop: 30,
+    paddingHorizontal: 40,
+    backgroundColor: "#fff",
+    flexGrow: 1,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  table: {
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: "#000",
+  },
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+  },
+  cell: {
+    flex: 1,
+    textAlign: "center",
+    paddingVertical: 24,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerRow: {
+    backgroundColor: "#f4f4f4",
+  },
+  headerText: {
+    fontWeight: "bold",
+  },
+  bmiText: {
+    color: "#000",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalBox: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    width: 250,
+    alignItems: "center",
+    elevation: 4,
+    borderWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 15,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#000",
+    width: "80%",
+    padding: 8,
+    textAlign: "center",
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "80%",
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 10,
+    marginHorizontal: 5,
+    borderRadius: 6,
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  deleteBtn: {
+    borderColor: "#d33",
+  },
+  deleteText: {
+    color: "#d33",
+    fontWeight: "600",
+  },
+  editBtn: {
+    backgroundColor: "#e94f6e",
+    borderColor: "#e94f6e",
+  },
+  editText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 8,
+    right: 10,
+  },
+  closeText: {
+    fontSize: 26,
+    color: "#333",
   },
 });
