@@ -4,7 +4,7 @@ import React from "react";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { ChartLine } from "lucide-react-native";
+import { CalendarRange, ChartLine } from "lucide-react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -14,13 +14,23 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: true,
         tabBarButton: HapticTab,
+        headerStyle: {
+          borderBottomColor: "#000", // czarna kreska pod headerem
+          borderBottomWidth: 1,
+        },
+        tabBarStyle: {
+          height: 60,
+          paddingTop: 10,
+          borderTopColor: "#000", // czarna kreska
+          borderTopWidth: 1, // grubość kreski
+        },
       }}
     >
       <Tabs.Screen
         name="history"
         options={{
           title: "Weight history",
-          tabBarIcon: () => <ChartLine color="#000000" />,
+          tabBarIcon: () => <CalendarRange color="#000000" />,
           tabBarLabel: "",
         }}
       />
