@@ -1,98 +1,159 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [bmi, setBmi] = useState<string | null>(null);
+  const [weightStatus, setWeightStatus] = useState("");
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const calculateBMI = async () => {
+    if (weight && height) {
+      const weightClean = weight.replace(",", ".");
+      const heightClean = height.replace(",", ".");
+
+      const w = Number(weightClean);
+      const h = Number(heightClean);
+
+      if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+        alert("Enter valid positive numbers for weight and height.");
+        return;
+      }
+
+      const bmiValue = w / (h / 100) ** 2;
+      setBmi(bmiValue.toFixed(1));
+
+      switch (true) {
+        case bmiValue < 18.5:
+          setWeightStatus("underweight");
+          break;
+        case bmiValue >= 18.5 && bmiValue < 25:
+          setWeightStatus("at a healthy weight.");
+          break;
+        case bmiValue >= 25 && bmiValue < 30:
+          setWeightStatus("overweight");
+          break;
+        case bmiValue >= 30 && bmiValue < 35:
+          setWeightStatus("obese (stage 1)");
+          break;
+        case bmiValue >= 35:
+          setWeightStatus("obese (stage 2)");
+          break;
+        default:
+          setWeightStatus("Error");
+      }
+
+      const currentDate = new Date().toISOString();
+
+      const data = {
+        weight: w,
+        height: h,
+        bmi: bmi,
+        date: currentDate,
+      };
+
+      await AsyncStorage.setItem("bmiData", JSON.stringify(data));
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.inputContainer}>
+        <Text style={styles.text}>Enter weight (kg):</Text>
+        <TextInput
+          style={styles.input}
+          value={weight}
+          onChangeText={setWeight}
+          keyboardType="numeric"
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.text}>Enter height (cm):</Text>
+        <TextInput
+          style={styles.input}
+          value={height}
+          onChangeText={setHeight}
+          keyboardType="numeric"
+        />
+      </View>
+      <TouchableOpacity style={styles.button} onPress={calculateBMI}>
+        <Text style={styles.buttonText}>Submit</Text>
+      </TouchableOpacity>
+      {bmi && (
+        <View style={styles.resultContainer}>
+          <Text style={styles.result}>
+            Your BMI is: <Text style={styles.bmiValue}>{bmi}</Text>
+          </Text>
+          <Text style={styles.result}>
+            You are: <Text style={styles.bmiValue}>{weightStatus}</Text>
+          </Text>
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    padding: 30,
+    paddingTop: 100,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    flex: 1,
+    gap: 30,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  inputContainer: {
+    gap: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  input: {
+    borderWidth: 1,
+    borderColor: "#000",
+    backgroundColor: "#FFFFFF",
+    fontSize: 24,
+    marginBottom: 10,
+    padding: 8,
+    width: 250,
+    height: 65,
+  },
+  text: {
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: "#FA5080",
+    justifyContent: "center",
+    padding: 12,
+    borderRadius: 5,
+    marginTop: 10,
+    marginBottom: 10,
+    width: 170,
+    height: 60,
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 18,
+  },
+  resultContainer: {
+    width: "80%",
+    marginTop: 40,
+    gap: 10,
+    fontSize: 22,
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
+  result: {
+    fontSize: 22,
+  },
+  bmiValue: {
+    color: "#f69",
+    fontWeight: "bold",
+    fontSize: 22,
   },
 });
