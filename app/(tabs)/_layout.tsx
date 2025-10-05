@@ -15,14 +15,14 @@ export default function TabLayout() {
         headerShown: true,
         tabBarButton: HapticTab,
         headerStyle: {
-          borderBottomColor: "#000", // czarna kreska pod headerem
+          borderBottomColor: "#000",
           borderBottomWidth: 1,
         },
         tabBarStyle: {
           height: 60,
           paddingTop: 10,
-          borderTopColor: "#000", // czarna kreska
-          borderTopWidth: 1, // grubość kreski
+          borderTopColor: "#000",
+          borderTopWidth: 1,
         },
       }}
     >
