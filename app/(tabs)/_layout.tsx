@@ -1,10 +1,9 @@
-import { Tabs } from "expo-router";
-import React from "react";
-
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import PinkPlusIcon from "@/components/PinkPlusIcon";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Tabs } from "expo-router";
 import { CalendarRange, ChartLine } from "lucide-react-native";
+import React from "react";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -30,25 +29,37 @@ export default function TabLayout() {
         name="history"
         options={{
           title: "Weight history",
-          tabBarIcon: () => <CalendarRange color="#000000" />,
-          tabBarLabel: "",
-        }}
-      />
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Track your weight",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ focused }) => (
+            <CalendarRange
+              color="#000000"
+              size={focused ? 32 : 24} // bigger when active
+            />
           ),
           tabBarLabel: "",
         }}
       />
+
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Track your weight",
+          tabBarIcon: ({ focused }) => (
+            <PinkPlusIcon size={focused ? 36 : 28} />
+          ),
+          tabBarLabel: "",
+        }}
+      />
+
       <Tabs.Screen
         name="chart"
         options={{
           title: "Weight chart",
-          tabBarIcon: () => <ChartLine color="#000000" />,
+          tabBarIcon: ({ focused }) =>  (
+            <ChartLine 
+            color="#000000"
+            size={focused ? 32 : 24}
+            />
+          ),
           tabBarLabel: "",
         }}
       />
