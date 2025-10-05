@@ -1,103 +1,137 @@
-import { StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { LineChart } from "react-native-chart-kit";
+import BmiEntry from "./Entry.types";
 
-import { View } from "react-native";
+const screenWidth = Dimensions.get("window").width;
 
-export default function HomeScreen() {
+export default function WeightChart() {
+  const [entries, setEntries] = useState<BmiEntry[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const stored = await AsyncStorage.getItem("bmiData");
+      const data: BmiEntry[] = stored ? JSON.parse(stored) : [];
+
+      const dataWithFormattedDates = data.map((entry: BmiEntry) => {
+        const dateObj = new Date(entry.date);
+        const day = dateObj.getDate().toString().padStart(2, "0");
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+        const year = dateObj.getFullYear();
+
+        return {
+          ...entry,
+          date: `${day}.${month}.${year}`,
+        };
+      });
+
+      setEntries(
+        Array.isArray(dataWithFormattedDates) ? dataWithFormattedDates : []
+      );
+    };
+    fetchData();
+  }, []);
+
+  const [startIndex, setStartIndex] = useState<number>(0);
+
+  useEffect(() => {
+    if (entries.length > 0) {
+      const newStartIndex =
+        entries.length > windowSize ? entries.length - windowSize : 0;
+      setStartIndex(newStartIndex);
+    }
+  }, [entries]);
+
+  const windowSize = 5;
+
+  const endIndex = startIndex + windowSize;
+  const displayEntries = entries.slice(startIndex, endIndex);
+
+  const labels = displayEntries.map((e) => e.date);
+  const weights = displayEntries.map((e) => e.weight);
+
+  const scrollLeft = () => {
+    setStartIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const scrollRight = () => {
+    setStartIndex((prev) =>
+      Math.min(prev + 1, Math.max(entries.length - windowSize, 0))
+    );
+  };
+
   return (
-    <View></View>
-    // <ParallaxScrollView
-    //   headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-    //   headerImage={
-    //     <Image
-    //       source={require("@/assets/images/partial-react-logo.png")}
-    //       style={styles.reactLogo}
-    //     />
-    //   }
-    // >
-    //   <ThemedView style={styles.titleContainer}>
-    //     <ThemedText type="title">Welcome!</ThemedText>
-    //     <HelloWave />
-    //   </ThemedView>
-    //   <ThemedView style={styles.stepContainer}>
-    //     <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-    //     <ThemedText>
-    //       Edit{" "}
-    //       <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-    //       to see changes. Press{" "}
-    //       <ThemedText type="defaultSemiBold">
-    //         {Platform.select({
-    //           ios: "cmd + d",
-    //           android: "cmd + m",
-    //           web: "F12",
-    //         })}
-    //       </ThemedText>{" "}
-    //       to open developer tools.
-    //     </ThemedText>
-    //   </ThemedView>
-    //   <ThemedView style={styles.stepContainer}>
-    //     <Link href="/modal">
-    //       <Link.Trigger>
-    //         <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-    //       </Link.Trigger>
-    //       <Link.Preview />
-    //       <Link.Menu>
-    //         <Link.MenuAction
-    //           title="Action"
-    //           icon="cube"
-    //           onPress={() => alert("Action pressed")}
-    //         />
-    //         <Link.MenuAction
-    //           title="Share"
-    //           icon="square.and.arrow.up"
-    //           onPress={() => alert("Share pressed")}
-    //         />
-    //         <Link.Menu title="More" icon="ellipsis">
-    //           <Link.MenuAction
-    //             title="Delete"
-    //             icon="trash"
-    //             destructive
-    //             onPress={() => alert("Delete pressed")}
-    //           />
-    //         </Link.Menu>
-    //       </Link.Menu>
-    //     </Link>
+    <View style={styles.container}>
+      <ScrollView horizontal>
+        <LineChart
+          data={{
+            labels: labels,
+            datasets: [{ data: weights }],
+          }}
+          width={screenWidth * 0.95}
+          height={350}
+          yAxisSuffix=" kg"
+          chartConfig={{
+            backgroundColor: "#fff",
+            backgroundGradientFrom: "#fff",
+            backgroundGradientTo: "#fff",
+            decimalPlaces: 1,
+            color: (opacity = 1) => `rgba(246,105,153,${opacity})`,
+            labelColor: (opacity = 1) => `#666`,
+          }}
+          bezier
+          style={styles.chart}
+        />
+      </ScrollView>
 
-    //     <ThemedText>
-    //       {`Tap the Explore tab to learn more about what's included in this starter app.`}
-    //     </ThemedText>
-    //   </ThemedView>
-    //   <ThemedView style={styles.stepContainer}>
-    //     <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-    //     <ThemedText>
-    //       {`When you're ready, run `}
-    //       <ThemedText type="defaultSemiBold">
-    //         npm run reset-project
-    //       </ThemedText>{" "}
-    //       to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-    //       directory. This will move the current{" "}
-    //       <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-    //       <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-    //     </ThemedText>
-    //   </ThemedView>
-    // </ParallaxScrollView>
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity onPress={scrollLeft} style={styles.arrowButton}>
+          <Text style={styles.arrowText}>◀</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={scrollRight} style={styles.arrowButton}>
+          <Text style={styles.arrowText}>▶</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
+  container: {
+    flex: 1,
+    justifyContent: "flex-start",
     alignItems: "center",
-    gap: 8,
+    backgroundColor: "#fff",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  chart: {
+    marginTop: 16,
+    borderRadius: 12,
+    alignSelf: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  buttonsContainer: {
+    flexDirection: "row",
+    width: "90%",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  arrowButton: {
+    marginHorizontal: 20,
+    backgroundColor: "#f69",
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  arrowText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });

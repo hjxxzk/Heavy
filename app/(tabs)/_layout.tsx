@@ -30,10 +30,7 @@ export default function TabLayout() {
         options={{
           title: "Weight history",
           tabBarIcon: ({ focused }) => (
-            <CalendarRange
-              color="#000000"
-              size={focused ? 32 : 24} // bigger when active
-            />
+            <CalendarRange color="#000000" size={focused ? 32 : 24} />
           ),
           tabBarLabel: "",
         }}
@@ -54,11 +51,8 @@ export default function TabLayout() {
         name="chart"
         options={{
           title: "Weight chart",
-          tabBarIcon: ({ focused }) =>  (
-            <ChartLine 
-            color="#000000"
-            size={focused ? 32 : 24}
-            />
+          tabBarIcon: ({ focused }) => (
+            <ChartLine color="#000000" size={focused ? 32 : 24} />
           ),
           tabBarLabel: "",
         }}

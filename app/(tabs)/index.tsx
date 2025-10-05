@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BmiEntry from "./Entry.types";
 
 export default function HomeScreen() {
   const [weight, setWeight] = useState("");
@@ -50,16 +51,28 @@ export default function HomeScreen() {
           setWeightStatus("Error");
       }
 
-      const currentDate = new Date().toISOString();
+      saveBmiData(w, h, bmiValue.toFixed(1));
+    }
+  };
 
-      const data = {
-        weight: w,
-        height: h,
-        bmi: bmi,
-        date: currentDate,
-      };
+  const saveBmiData = async (w: number, h: number, bmi: string) => {
+    const currentDate = new Date().toISOString();
+    const newEntry: BmiEntry = {
+      weight: w,
+      height: h,
+      bmi: bmi,
+      date: currentDate,
+    };
 
-      await AsyncStorage.setItem("bmiData", JSON.stringify(data));
+    try {
+      const existingData = await AsyncStorage.getItem("bmiData");
+      let dataArray = existingData ? JSON.parse(existingData) : [];
+
+      dataArray.push(newEntry);
+
+      await AsyncStorage.setItem("bmiData", JSON.stringify(dataArray));
+    } catch (error) {
+      alert("Błąd podczas zapisywania danych:");
     }
   };
 
