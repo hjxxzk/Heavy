@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 100,
     justifyContent: "flex-start",
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     flex: 1,
     gap: 30,
