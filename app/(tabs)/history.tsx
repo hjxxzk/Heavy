@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -64,20 +65,25 @@ export default function HistoryScreen() {
     }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const storedDataString = await AsyncStorage.getItem("bmiDataArray");
-        if (storedDataString) {
-          const storedData = JSON.parse(storedDataString);
-          setData(storedData);
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        try {
+          const storedDataString = await AsyncStorage.getItem("bmiDataArray");
+          if (storedDataString) {
+            const storedData = JSON.parse(storedDataString);
+            setData(storedData);
+          } else {
+            setData([]); // if empty
+          }
+        } catch (error) {
+          console.error("Error loading data", error);
         }
-      } catch (error) {
-        console.error("Error loading data", error);
-      }
-    };
-    loadData();
-  }, []);
+      };
+
+      loadData();
+    }, [])
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
