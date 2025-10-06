@@ -19,13 +19,12 @@ export default function HistoryScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [editWeight, setEditWeight] = useState("");
 
-  // helper to color BMI cell
   const getBMIColor = (bmi: number) => {
-    if (bmi < 18.5) return "#4ea8ff"; // underweight
-    if (bmi < 25) return "#4cff7a"; // normal
-    if (bmi < 30) return "#ffe84c"; // overweight
-    if (bmi < 35) return "#ff6906"; // obese type 1
-    return "#f71717"; // obese type 2
+    if (bmi < 18.5) return "#4ea8ff";
+    if (bmi < 25) return "#4cff7a";
+    if (bmi < 30) return "#ffe84c";
+    if (bmi < 35) return "#ff6906";
+    return "#f71717";
   };
 
   const openModal = (index: number) => {
@@ -34,14 +33,13 @@ export default function HistoryScreen() {
     setModalVisible(true);
   };
 
-  const HEIGHT = 1.7; // Hard coded
+  const HEIGHT = 1.7;
 
   const handleEdit = () => {
     if (selectedIndex === null) return;
     const newData = [...data];
     const newWeight = parseFloat(editWeight);
     newData[selectedIndex].weight = newWeight;
-    // Recalculate BMI
     newData[selectedIndex].bmi = parseFloat(
       (newWeight / (HEIGHT * HEIGHT)).toFixed(1)
     );
@@ -58,7 +56,6 @@ export default function HistoryScreen() {
     setModalVisible(false);
   };
 
-  // Save updated data array to AsyncStorage
   const saveDataToStorage = async (newData: typeof data) => {
     try {
       await AsyncStorage.setItem("bmiDataArray", JSON.stringify(newData));
@@ -67,7 +64,6 @@ export default function HistoryScreen() {
     }
   };
 
-  // Load data from AsyncStorage on mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -86,14 +82,12 @@ export default function HistoryScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.table}>
-        {/* Header */}
         <View style={[styles.row, styles.headerRow]}>
           <Text style={[styles.cell, styles.headerText]}>Date</Text>
           <Text style={[styles.cell, styles.headerText]}>Weight</Text>
           <Text style={[styles.cell, styles.headerText]}>BMI</Text>
         </View>
 
-        {/* Rows */}
         {data.map((item, index) => (
           <View key={index} style={styles.row}>
             <Text style={styles.cell}>
@@ -116,7 +110,6 @@ export default function HistoryScreen() {
         ))}
       </View>
 
-      {/* Modal code remains unchanged */}
       <Modal
         visible={modalVisible}
         transparent
