@@ -74,7 +74,7 @@ export default function WeightChart() {
     );
   };
 
-  return (
+  return entries && entries.length > 0 ? (
     <View style={styles.container}>
       <ScrollView horizontal>
         <LineChart
@@ -108,6 +108,10 @@ export default function WeightChart() {
         </TouchableOpacity>
       </View>
     </View>
+  ) : (
+    <View style={styles.textContainer}>
+      <Text style={styles.text}>No data available yet.</Text>
+    </View>
   );
 }
 
@@ -139,5 +143,13 @@ const styles = StyleSheet.create({
   arrowText: {
     color: "#fff",
     fontSize: 16,
+  },
+  text: {
+    fontSize: 22,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

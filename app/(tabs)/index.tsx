@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -29,6 +29,13 @@ export default function HomeScreen() {
     );
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      setBmi(null);
+      setWeightStatus("");
+    }, [])
+  );
+
   useEffect(() => {
     const checkStored = async () => {
       try {
@@ -51,7 +58,7 @@ export default function HomeScreen() {
 
   const calculateBMI = useCallback(async () => {
     if (!weight || !height) {
-      Alert.alert("Error", "Enter both weight and height.");
+      alert("Enter both weight and height.");
       return;
     }
 
@@ -62,7 +69,7 @@ export default function HomeScreen() {
     const h = Number(heightClean);
 
     if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-      Alert.alert("Error", "Enter valid positive numbers.");
+      alert("Enter valid positive numbers.");
       return;
     }
 
@@ -99,7 +106,7 @@ export default function HomeScreen() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(storedData));
       setAlreadyStoredToday(true);
     } catch (error) {
-      Alert.alert("Error", "Error saving data");
+      alert("Error saving data");
     }
   }, [weight, height]);
 
@@ -157,6 +164,7 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 100,
     justifyContent: "flex-start",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     flex: 1,
     gap: 30,

@@ -85,81 +85,93 @@ export default function HistoryScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.table}>
-        <View style={[styles.row, styles.headerRow]}>
-          <Text style={[styles.cell, styles.headerText]}>Date</Text>
-          <Text style={[styles.cell, styles.headerText]}>Weight</Text>
-          <Text style={[styles.cell, styles.headerText]}>BMI</Text>
-        </View>
-
-        {data.map((item, index) => (
-          <View key={index} style={styles.row}>
-            <Text style={styles.cell}>
-              {new Date(item.date).toLocaleDateString()}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.cell}
-              onPress={() => {
-                setHeight(item.height * 0.01), openModal(index);
-              }}
-            >
-              <Text>{item.weight.toFixed(1)}</Text>
-            </TouchableOpacity>
-
-            <View
-              style={[styles.cell, { backgroundColor: getBMIColor(item.bmi) }]}
-            >
-              <Text style={styles.bmiText}>{item.bmi.toFixed(1)}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Edit</Text>
-
-            <TextInput
-              style={styles.input}
-              value={editWeight}
-              onChangeText={setEditWeight}
-              keyboardType="numeric"
-            />
-
-            <View style={styles.buttonRow}>
-              <Pressable
-                style={[styles.button, styles.deleteBtn]}
-                onPress={handleDelete}
-              >
-                <Text style={styles.deleteText}>Delete</Text>
-              </Pressable>
-
-              <Pressable
-                style={[styles.button, styles.editBtn]}
-                onPress={handleEdit}
-              >
-                <Text style={styles.editText}>Edit</Text>
-              </Pressable>
+    <>
+      {data && data.length > 0 ? (
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.table}>
+            <View style={[styles.row, styles.headerRow]}>
+              <Text style={[styles.cell, styles.headerText]}>Date</Text>
+              <Text style={[styles.cell, styles.headerText]}>Weight</Text>
+              <Text style={[styles.cell, styles.headerText]}>BMI</Text>
             </View>
 
-            <Pressable
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeText}>×</Text>
-            </Pressable>
+            {data.map((item, index) => (
+              <View key={index} style={styles.row}>
+                <Text style={styles.cell}>
+                  {new Date(item.date).toLocaleDateString()}
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.cell}
+                  onPress={() => {
+                    setHeight(item.height * 0.01);
+                    openModal(index);
+                  }}
+                >
+                  <Text>{item.weight.toFixed(1)}</Text>
+                </TouchableOpacity>
+
+                <View
+                  style={[
+                    styles.cell,
+                    { backgroundColor: getBMIColor(item.bmi) },
+                  ]}
+                >
+                  <Text style={styles.bmiText}>{item.bmi.toFixed(1)}</Text>
+                </View>
+              </View>
+            ))}
           </View>
+
+          <Modal
+            visible={modalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalBox}>
+                <Text style={styles.modalTitle}>Edit</Text>
+
+                <TextInput
+                  style={styles.input}
+                  value={editWeight}
+                  onChangeText={setEditWeight}
+                  keyboardType="numeric"
+                />
+
+                <View style={styles.buttonRow}>
+                  <Pressable
+                    style={[styles.button, styles.deleteBtn]}
+                    onPress={handleDelete}
+                  >
+                    <Text style={styles.deleteText}>Delete</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[styles.button, styles.editBtn]}
+                    onPress={handleEdit}
+                  >
+                    <Text style={styles.editText}>Edit</Text>
+                  </Pressable>
+                </View>
+
+                <Pressable
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.closeText}>×</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </ScrollView>
+      ) : (
+        <View style={styles.textContainer}>
+          <Text style={styles.text}>No data available yet.</Text>
         </View>
-      </Modal>
-    </ScrollView>
+      )}
+    </>
   );
 }
 
@@ -265,5 +277,13 @@ const styles = StyleSheet.create({
   closeText: {
     fontSize: 26,
     color: "#333",
+  },
+  text: {
+    fontSize: 22,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
