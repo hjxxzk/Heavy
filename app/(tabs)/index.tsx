@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -9,93 +10,134 @@ import {
 } from "react-native";
 import BmiEntry from "./Entry.types";
 
+const STORAGE_KEY = "bmiDataArray";
+
 export default function HomeScreen() {
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
   const [bmi, setBmi] = useState<string | null>(null);
   const [weightStatus, setWeightStatus] = useState("");
+  const [alreadyStoredToday, setAlreadyStoredToday] = useState(false);
 
-  const calculateBMI = async () => {
-    if (weight && height) {
-      const weightClean = weight.replace(",", ".");
-      const heightClean = height.replace(",", ".");
+  const isSameDay = (isoA: string, isoB: string) => {
+    const a = new Date(isoA);
+    const b = new Date(isoB);
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
+  };
 
-      const w = Number(weightClean);
-      const h = Number(heightClean);
+  useEffect(() => {
+    const checkStored = async () => {
+      try {
+        const storedString = await AsyncStorage.getItem(STORAGE_KEY);
+        const storedData: BmiEntry[] = storedString
+          ? JSON.parse(storedString)
+          : [];
+        const todayIso = new Date().toISOString();
+        const existsToday = storedData.some((entry) =>
+          isSameDay(entry.date, todayIso)
+        );
+        setAlreadyStoredToday(existsToday);
+      } catch (error) {
+        console.error("Error reading storage", error);
+      }
+    };
 
-      if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-        alert("Enter valid positive numbers for weight and height.");
+    checkStored();
+  }, []);
+
+  const calculateBMI = useCallback(async () => {
+    if (!weight || !height) {
+      Alert.alert("Error", "Enter both weight and height.");
+      return;
+    }
+
+    const weightClean = weight.replace(",", ".").trim();
+    const heightClean = height.replace(",", ".").trim();
+
+    const w = Number(weightClean);
+    const h = Number(heightClean);
+
+    if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+      Alert.alert("Error", "Enter valid positive numbers.");
+      return;
+    }
+
+    const bmiValue = w / (h / 100) ** 2;
+    const bmiStr = bmiValue.toFixed(1);
+    setBmi(bmiStr);
+
+    if (bmiValue < 18.5) setWeightStatus("underweight");
+    else if (bmiValue < 25) setWeightStatus("at a healthy weight.");
+    else if (bmiValue < 30) setWeightStatus("overweight");
+    else if (bmiValue < 35) setWeightStatus("obese (stage 1)");
+    else setWeightStatus("obese (stage 2)");
+
+    try {
+      const storedString = await AsyncStorage.getItem(STORAGE_KEY);
+      const storedData: BmiEntry[] = storedString
+        ? JSON.parse(storedString)
+        : [];
+
+      const todayIso = new Date().toISOString();
+      if (storedData.some((entry) => isSameDay(entry.date, todayIso))) {
+        setAlreadyStoredToday(true);
         return;
       }
-
-      const bmiValue = w / (h / 100) ** 2;
-      setBmi(bmiValue.toFixed(1));
-
-      switch (true) {
-        case bmiValue < 18.5:
-          setWeightStatus("underweight");
-          break;
-        case bmiValue >= 18.5 && bmiValue < 25:
-          setWeightStatus("at a healthy weight.");
-          break;
-        case bmiValue >= 25 && bmiValue < 30:
-          setWeightStatus("overweight");
-          break;
-        case bmiValue >= 30 && bmiValue < 35:
-          setWeightStatus("obese (stage 1)");
-          break;
-        case bmiValue >= 35:
-          setWeightStatus("obese (stage 2)");
-          break;
-        default:
-          setWeightStatus("Error");
-      }
-
-      const currentDate = new Date().toISOString();
 
       const newEntry: BmiEntry = {
         weight: w,
         height: h,
-        bmi: parseFloat(bmiValue.toFixed(1)),
-        date: currentDate,
+        bmi: parseFloat(bmiStr),
+        date: todayIso,
       };
 
-      try {
-        const storedDataString = await AsyncStorage.getItem("bmiDataArray");
-        let storedData = storedDataString ? JSON.parse(storedDataString) : [];
-
-        storedData.push(newEntry);
-
-        await AsyncStorage.setItem("bmiDataArray", JSON.stringify(storedData));
-      } catch (error) {
-        console.error("Error saving data", error);
-      }
+      storedData.push(newEntry);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(storedData));
+      setAlreadyStoredToday(true);
+    } catch (error) {
+      Alert.alert("Error", "Error saving data");
     }
-  };
+  }, [weight, height]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <Text style={styles.text}>Enter weight (kg):</Text>
-        <TextInput
-          style={styles.input}
-          value={weight}
-          onChangeText={setWeight}
-          keyboardType="numeric"
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.text}>Enter height (cm):</Text>
-        <TextInput
-          style={styles.input}
-          value={height}
-          onChangeText={setHeight}
-          keyboardType="numeric"
-        />
-      </View>
-      <TouchableOpacity style={styles.button} onPress={calculateBMI}>
-        <Text style={styles.buttonText}>Submit</Text>
-      </TouchableOpacity>
+      {!alreadyStoredToday ? (
+        <>
+          <View style={styles.inputContainer}>
+            <Text style={styles.text}>Enter weight (kg):</Text>
+            <TextInput
+              style={styles.input}
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="decimal-pad"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.text}>Enter height (cm):</Text>
+            <TextInput
+              style={styles.input}
+              value={height}
+              onChangeText={setHeight}
+              keyboardType="decimal-pad"
+            />
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={calculateBMI}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text style={styles.result}>Today's data already entered.</Text>
+          <Text style={styles.result}>Come back tomorrow!</Text>
+        </>
+      )}
+
       {bmi && (
         <View style={styles.resultContainer}>
           <Text style={styles.result}>
