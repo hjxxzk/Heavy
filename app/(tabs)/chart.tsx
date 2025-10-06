@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
   ScrollView,
@@ -12,35 +13,42 @@ import { LineChart } from "react-native-chart-kit";
 import BmiEntry from "./Entry.types";
 
 const screenWidth = Dimensions.get("window").width;
+const windowSize = 5;
 
 export default function WeightChart() {
   const [entries, setEntries] = useState<BmiEntry[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const stored = await AsyncStorage.getItem("bmiDataArray");
-      const data: BmiEntry[] = stored ? JSON.parse(stored) : [];
-
-      const dataWithFormattedDates = data.map((entry: BmiEntry) => {
-        const dateObj = new Date(entry.date);
-        const day = dateObj.getDate().toString().padStart(2, "0");
-        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-        const year = dateObj.getFullYear();
-
-        return {
-          ...entry,
-          date: `${day}.${month}.${year}`,
-        };
-      });
-
-      setEntries(
-        Array.isArray(dataWithFormattedDates) ? dataWithFormattedDates : []
-      );
-    };
-    fetchData();
-  }, []);
-
   const [startIndex, setStartIndex] = useState<number>(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        try {
+          const stored = await AsyncStorage.getItem("bmiDataArray");
+          const data: BmiEntry[] = stored ? JSON.parse(stored) : [];
+
+          const dataWithFormattedDates = data.map((entry: BmiEntry) => {
+            const dateObj = new Date(entry.date);
+            const day = dateObj.getDate().toString().padStart(2, "0");
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+            const year = dateObj.getFullYear();
+
+            return {
+              ...entry,
+              date: `${day}.${month}.${year}`,
+            };
+          });
+
+          setEntries(
+            Array.isArray(dataWithFormattedDates) ? dataWithFormattedDates : []
+          );
+        } catch (error) {
+          console.error("Error loading data", error);
+        }
+      };
+
+      fetchData();
+    }, [])
+  );
 
   useEffect(() => {
     if (entries.length > 0) {
@@ -49,8 +57,6 @@ export default function WeightChart() {
       setStartIndex(newStartIndex);
     }
   }, [entries]);
-
-  const windowSize = 5;
 
   const endIndex = startIndex + windowSize;
   const displayEntries = entries.slice(startIndex, endIndex);
