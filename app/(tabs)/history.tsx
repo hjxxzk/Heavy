@@ -19,6 +19,7 @@ export default function HistoryScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [editWeight, setEditWeight] = useState("");
+  const [height, setHeight] = useState<number>(0);
 
   const getBMIColor = (bmi: number) => {
     if (bmi < 18.5) return "#4ea8ff";
@@ -34,15 +35,13 @@ export default function HistoryScreen() {
     setModalVisible(true);
   };
 
-  const HEIGHT = 1.7;
-
   const handleEdit = () => {
     if (selectedIndex === null) return;
     const newData = [...data];
     const newWeight = parseFloat(editWeight);
     newData[selectedIndex].weight = newWeight;
     newData[selectedIndex].bmi = parseFloat(
-      (newWeight / (HEIGHT * HEIGHT)).toFixed(1)
+      (newWeight / (height * height)).toFixed(1)
     );
     setData(newData);
     saveDataToStorage(newData);
@@ -74,7 +73,7 @@ export default function HistoryScreen() {
             const storedData = JSON.parse(storedDataString);
             setData(storedData);
           } else {
-            setData([]); // if empty
+            setData([]);
           }
         } catch (error) {
           console.error("Error loading data", error);
@@ -102,7 +101,9 @@ export default function HistoryScreen() {
 
             <TouchableOpacity
               style={styles.cell}
-              onPress={() => openModal(index)}
+              onPress={() => {
+                setHeight(item.height * 0.01), openModal(index);
+              }}
             >
               <Text>{item.weight.toFixed(1)}</Text>
             </TouchableOpacity>
