@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -137,6 +138,13 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.button} onPress={calculateBMI}>
             <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={() => router.push("/modal")}
+          >
+            <Text style={{ color: "#007aff", fontSize: 16 }}>What is BMI?</Text>
+          </TouchableOpacity>
         </>
       ) : (
         <>
@@ -214,5 +222,9 @@ const styles = StyleSheet.create({
     color: "#f69",
     fontWeight: "bold",
     fontSize: 22,
+  },
+  infoButton: {
+    alignSelf: "center",
+    marginTop: 12,
   },
 });
