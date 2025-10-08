@@ -13,7 +13,7 @@ import { LineChart } from "react-native-chart-kit";
 import BmiEntry from "./Entry.types";
 
 const screenWidth = Dimensions.get("window").width;
-const windowSize = 5;
+const windowSize = 4;
 
 export default function WeightChart() {
   const [entries, setEntries] = useState<BmiEntry[]>([]);
